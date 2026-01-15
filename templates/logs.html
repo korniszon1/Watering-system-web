@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log'i</title>
+</head>
+<body>
+    <a href="/">Strona główna</a> </br></br>
+    <input type="text" id="filterInput" placeholder="Filtruj po nazwie sensora"  onkeyup="filterTable()">
+    </br>
+        <table id="logTable" border="1" cellpadding="5">
+            <thead>
+                <tr>
+                    <th>Sensor</th>
+                    <th>Value</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>        {% for row in logs %}            
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+
+                </tr>        {% endfor %}    
+            </tbody>
+        </table>
+        <script>
+        function filterTable()
+        {    
+            const input = document.getElementById("filterInput");
+            const filter = input.value.toLowerCase();    
+            const table = document.getElementById("logTable");    
+            const trs = table.getElementsByTagName("tr");    
+            for (let i = 1; i < trs.length; i++) 
+            {        
+                const sensorCell = trs[i].getElementsByTagName("td")[0];        
+                if (sensorCell) {            
+                    const txt = sensorCell.textContent || sensorCell.innerText;            
+                    if (txt.toLowerCase().indexOf(filter) > -1) {                
+                        trs[i].style.display = "";            
+                    } else {                
+                        trs[i].style.display = "none";            
+                    }        
+                }    
+            }
+        }
+        </script>
+    </body>
+</html>

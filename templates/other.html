@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inne</title>
+</head>
+<body>
+    <a href="/">Strona główna</a>
+    <h1>Ustawienia konfiguracji obrotu</h1>
+    
+    <form action="/update-other" method="post" id="form">
+        <label for="time">Co ile sekund odczytywać wartości sensorów</label>
+        <input type="range" min="1" max="180" value="{{config[8]}}" name="time" id="time">
+        <p id="timer-value">{{config[8]}}s</p>
+        </br>
+        </br>
+        <input type="submit" value="Zaktualizuj konfiguracje wody">
+        <input type="reset" value="Przywróć ustawienia" id="reset">
+    </form>
+    
+    <script>
+        var time = document.getElementById("time")
+        var timerValue = document.getElementById("timer-value")
+
+        time.addEventListener('input', () =>{
+            timerValue.innerHTML = time.value +"s"
+        })
+
+        document.getElementById("form").addEventListener('reset', () => {
+            setTimeout(() => {
+                time.dispatchEvent(new Event('input'));
+            }, 0);
+        })
+
+    </script>
+</body>
+</html>

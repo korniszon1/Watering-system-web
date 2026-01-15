@@ -1,0 +1,7 @@
+# created by virtualenv automatically
+env
+__pycache__
+
+### VS Code ###
+.vscode/
+main.py

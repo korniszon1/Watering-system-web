@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konfiguracja</title>
+</head>
+<body>
+    <!-- (
+            "auto",        # water_mode
+            30.0,          # moisture_pct(%)
+            5,             # water_time
+            10,          # water_mililiters
+            "auto",       # servo_mode
+            1,            # auto_threshold
+            4,            # servo_time
+            45,           # servo_angle
+            30             # log_timer
+        )) -->
+    <a href="/">Strona główna</a>
+    <h1>Ustawienia konfiguracji wody</h1>
+    
+    <form action="/update-water-conf" method="post" id="form">
+        <label for="mode">Wybierz tryb podlewania</label>
+        <select name="mode" id="tryb">
+            <option value="auto" {% if config[0] == 'auto' %} selected{% endif %}>auto</option>
+            <option value="manual" {% if config[0] == 'manual' %} selected{% endif %}>manual</option>
+        </select>
+        <div id="auto" {% if config[0] != 'semiauto' %} hidden{% endif %}>
+            <label for="moisture-pct">Wybierz % wilgotności przy którym kwiat będzie podlany</label>
+            <input type="range" min="0" max="90" value="{{config[1]}}" id="moisture-pct-range" name="moisture-pct">
+            <p id="moisture-pct-value">{{config[1]}}%</p>
+
+
+        </div>
+        <div id="manual" {% if config[0] != 'manual' %} hidden{% endif %}>
+            <label for="moisture-pct">Co ile godzin podlewać kwiat</label>
+            <input type="range" min="1" max="72" id="timer-range" value="{{config[2]}}" name="timer">
+            <p id="timer-value">{{config[2]}}h</p>
+        </div>
+
+        <div id="water">
+            <label for="water-amount">Ile mililitrów wody podawać przy podlaniu?</label>
+            <input type="range" min="1" max="100" id="water-range" value="{{(config[3]) | int}}" name="water-amount">
+            <p id="water-value">{{(config[3]) | int}}mm</p>
+        </div>
+        <input type="submit" value="Zaktualizuj konfiguracje wody">
+        <input type="reset" value="Przywróć ustawienia" id="reset">
+    </form>
+    
+    <script>
+        var tryb = document.getElementById("tryb");
+        var auto = document.getElementById("auto");
+
+        var moistureRange = document.getElementById("moisture-pct-range");
+        var moistureValue = document.getElementById("moisture-pct-value");
+
+        var manual = document.getElementById("manual");
+        var timerRange = document.getElementById("timer-range");
+        var timerValue = document.getElementById("timer-value");
+
+        var water = document.getElementById("water")
+        var waterRange = document.getElementById("water-range");
+        var waterValue = document.getElementById("water-value");
+
+        var resetButton = document.getElementById("reset");
+
+        
+
+        moistureRange.addEventListener('input', () =>{
+            moistureValue.innerHTML = moistureRange.value+"%"
+        })
+
+        timerRange.addEventListener('input', () =>{
+            timerValue.innerHTML = timerRange.value +"h"
+        })
+
+        waterRange.addEventListener('input', () =>{
+            waterValue.innerHTML = waterRange.value +"mm"
+        })
+        function update_form() {
+            switch (tryb.value) {
+                case "auto":
+                    auto.hidden = false;
+                    manual.hidden = true;
+                    water.hidden = false;
+                    break;
+                case "manual":
+                    auto.hidden = true;
+                    manual.hidden = false;
+                    water.hidden = false;
+                    break;
+                default:
+                    break;
+            }
+        }
+        tryb.addEventListener('change',update_form)
+
+        window.addEventListener("load", () => {
+            update_form()
+        });
+
+        document.getElementById("form").addEventListener('reset', () => {
+            setTimeout(() => {
+                console.log("po resecie");
+                update_form();
+                moistureRange.dispatchEvent(new Event('input'));
+                waterRange.dispatchEvent(new Event('input'));
+                timerRange.dispatchEvent(new Event('input'));
+            }, 0);
+        })
+    </script>
+</body>
+</html>
