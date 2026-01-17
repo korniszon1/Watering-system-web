@@ -173,7 +173,7 @@ body
     min-width: 10vw;
     min-height: 10vw;
 
-    background-image: conic-gradient(var(--light) 64%, rgba(0, 0, 0, 0) 64%);
+    background-image: conic-gradient(var(--light) 0%, rgba(0, 0, 0, 0) 0%);
     /* border: 1px solid var(--white-light); */
     border-radius: 50%;
 }

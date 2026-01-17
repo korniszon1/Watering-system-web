@@ -1,4 +1,5 @@
 import io
+import math
 from flask import *
 import sqlite3
 import matplotlib
@@ -48,48 +49,53 @@ def drop_db():
     conn.commit()
     conn.close()
 
-@app.route("/delete-data")
+@app.route("/delete-data", methods=['POST'])
 def drop_data():
     conn =sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     cursor.execute('''
-        drop table  servo_logs
+        delete from  servo_logs
     ''')
     cursor.execute('''
-        drop table  water_logs
+        delete from  water_logs
     ''')
     cursor.execute('''
-        drop table zone_logs
+        delete from zone_logs
     ''')
     cursor.execute('''
-        drop table sensor_logs
+        delete from sensor_logs
     ''')
     conn.commit()
     conn.close()
+    init_db()
+    return redirect(url_for('index'))
 
-@app.route("/delete-all")
+
+@app.route("/delete-all", methods=['POST'])
 def drop_all():
     conn =sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     cursor.execute('''
-        drop table  servo_logs
+        delete from  servo_logs
     ''')
     cursor.execute('''
-        drop table  water_logs
+        delete from  water_logs
     ''')
     cursor.execute('''
-        drop table configuration
+        delete from configuration
     ''')
     cursor.execute('''
-        drop table zone_logs
+        delete from zone_logs
     ''')
     cursor.execute('''
-        drop table sensor_logs
+        delete from sensor_logs
     ''')
     conn.commit()
     conn.close()
+    init_db()
+    return redirect(url_for('index'))
 
 #inicjalizacja bazy danych
 def init_db():
@@ -104,7 +110,25 @@ def init_db():
         date TIMESTAMP NOT NULL
     )
     """)
+    cursor.execute("SELECT COUNT(*) FROM sensor_logs")
+    count = cursor.fetchone()[0]
 
+
+    #init log
+    if count == 0:
+        print("INIT")
+        for name in ["moisture","water","foto1", "foto2"]:
+            cursor.execute("""
+                INSERT INTO sensor_logs (
+                    sensor_name,
+                    value,
+                    date
+                ) VALUES (?, ?, ?)
+            """, (
+                name,
+                10 if name == "water" else 0,
+                datetime.now()
+            ))
 
     #////////////////////////
     # Logi eventowe
@@ -119,13 +143,30 @@ def init_db():
         date DATETIME
     )
     """)
-
+    
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS water_logs (
            mililiters INTEGER,
            date DATETIME
         )
     """)
+    cursor.execute("SELECT COUNT(*) FROM water_logs")
+    count = cursor.fetchone()[0]
+
+
+    #init log
+    if count == 0:
+        cursor.execute("""
+            INSERT INTO water_logs (
+                mililiters,
+                date
+            ) VALUES (?, ?)
+        """, (
+            0,
+            datetime.now()
+        ))
+
+
     #////////////////////////
 
     #logi stref
@@ -287,7 +328,8 @@ def get_basic_info():
                         FROM sensor_logs
                         WHERE sensor_name IN ('moisture', 'foto1', 'foto2', 'water')
                         GROUP BY sensor_name
-                    )                 
+                    ) 
+                    ORDER BY sensor_name                
                    """)
     info = cursor.fetchall()
     conn.close()
@@ -540,7 +582,7 @@ def plot_zone():
     ax.set_facecolor("none")
     ax.set_yticklabels([])
 
-    rotation = np.pi / 6
+    rotation = math.radians(get_last_servo_log()[2])
     ax.set_theta_offset(np.pi/2 + rotation)
 
     ax.set_xticks([])
@@ -685,6 +727,7 @@ def other():
 
 def check_for_water():
     water = get_basic_info()[3][1]
+    print(get_basic_info())
     if(water < MIN_WATER):
         flash("Uwaga poziom wody jest niski!", "error")
 
