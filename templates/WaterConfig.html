@@ -112,7 +112,7 @@
 
                         <div id="water">
                             <label for="water-amount">Ile mililitrów wody podawać przy podlaniu?</label>
-                            <input type="range" min="10" max="100" id="water-range" value="{{(config[3]) | int}}" name="water-amount">
+                            <input type="range" min="10" max="100" step="10" id="water-range" value="{{(config[3]) | int}}" name="water-amount">
                             <p id="water-value">{{(config[3]) | int}}ml</p>
                         </div>
                         <input class="button" type="submit" value="Zaktualizuj konfiguracje wody">
@@ -124,7 +124,7 @@
                     <div class="small-title"> Wymuś podlanie wody <div class="divider"></div></div>
                     <form action="/water" method="post">
                         <label for="mili">Ile mililitrów wody podać?</label>
-                        <input type="range" min="10" max="100" id="water-range-2" value="25" name="mili">
+                        <input type="range" min="10" max="100" step="10" id="water-range-2" value="25" name="mili">
                         <p id="water-value-2">25ml</p>
 
                         <input class="button" type="submit" value="Podlej">

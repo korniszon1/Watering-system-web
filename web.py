@@ -97,22 +97,12 @@ def drop_all():
     init_db()
     return redirect(url_for('index'))
 
-#inicjalizacja bazy danych
-def init_db():
+#inicjalizacja konfiguracji i danych
+def check_for_init_data():
     conn =sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-
-    #logi sensorow
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS sensor_logs (
-        sensor_name TEXT NOT NULL,
-        value INTEGER NOT NULL,
-        date TIMESTAMP NOT NULL
-    )
-    """)
     cursor.execute("SELECT COUNT(*) FROM sensor_logs")
     count = cursor.fetchone()[0]
-
 
     #init log
     if count == 0:
@@ -130,26 +120,6 @@ def init_db():
                 datetime.now()
             ))
 
-    #////////////////////////
-    # Logi eventowe
-    #////////////////////////
-    #logi serwa
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS servo_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        old_angle INTEGER,
-        new_angle INTEGER,
-        mode TEXT,
-        date DATETIME
-    )
-    """)
-    
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS water_logs (
-           mililiters INTEGER,
-           date DATETIME
-        )
-    """)
     cursor.execute("SELECT COUNT(*) FROM water_logs")
     count = cursor.fetchone()[0]
 
@@ -166,21 +136,11 @@ def init_db():
             datetime.now()
         ))
 
-
-    #////////////////////////
-
-    #logi stref
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS zone_logs (
-        zone_id INT NOT NULL,
-        value FLOAT NOT NULL
-    )
-    """)
     cursor.execute("SELECT COUNT(*) FROM zone_logs")
     count = cursor.fetchone()[0]
 
 
-    #init config
+    #init zone_logs
     if count == 0:
         for i in range(6):
             value = 1
@@ -194,32 +154,6 @@ def init_db():
                 value
             ))
 
-    #Konfiguracja
-    # Tryb nawadniania (water_mode) TEXT– (auto/manual)
-    # Procent Wiglotności (moisture_pct) INT [10-90]% *tylko dla trybu auto
-    # Co ile ma być podlewany kwiat (water_time) INT [1-72] *tylko dla trybu manual
-    # Ilość podawanej wody (water_mililiters)
-
-    # Tryb obrotu (servo_mode) TEXT– (auto/manual/set)
-    # Próg naświetlenia – (auto_threshold) FLOAT *tylko dla trybu auto
-    # Czas obrotu (servo_time) INT [1-48] * tylko dla trybu manual
-    # Kąt serva (servo_angle) INT [0-180] *tylko dla trybu set
-
-    # Czas Log’ów (log_timer) INT [1 – 180] (sekundy)
-    cursor.execute('''
-        create table if not exists configuration(
-            water_mode TEXT,
-            moisture_pct float,
-            water_time integer,
-            water_mililiters float,
-            servo_mode TEXT,
-            auto_threshold float,
-            servo_time integer,
-            servo_angle integer,
-            log_timer integer
-            
-        )
-    ''')
     cursor.execute("SELECT COUNT(*) FROM configuration")
     count = cursor.fetchone()[0]
 
@@ -247,9 +181,88 @@ def init_db():
             0,           # servo_angle
             10             # log_timer
         ))
+    conn.commit()
+    conn.close()
+
+
+#inicjalizacja bazy danych
+def init_db():
+    conn =sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    #Tablica przechowująca log'i sensorów
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS sensor_logs (
+        sensor_name TEXT,
+        value INTEGER,
+        date TIMESTAMP
+    )
+    """)
+    
+    #Tablica przechowująca log'i stref
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS zone_logs (
+        zone_id INT,
+        value FLOAT
+    )
+    """)
+
+    #////////////////////////
+    # Logi eventowe
+    #////////////////////////
+    #Tablica przechowująca log'i wydarzeń serwa
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS servo_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        old_angle INTEGER,
+        new_angle INTEGER,
+        mode TEXT,
+        date DATETIME
+    )
+    """)
+    #Tablica przechowująca log'i wydarzeń pompy
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS water_logs (
+           mililiters INTEGER,
+           date DATETIME
+        )
+    """)
+    #////////////////////////
+
+
+    # Konfiguracja sprzętu
+    # Tryb nawadniania (water_mode) TEXT– (auto/manual)
+    # Procent Wiglotności (moisture_pct) INT [10-90]% *tylko dla trybu auto
+    # Co ile ma być podlewany kwiat (water_time) INT [1-72] *tylko dla trybu manual
+    # Ilość podawanej wody (water_mililiters)
+
+    # Tryb obrotu (servo_mode) TEXT– (auto/manual/set)
+    # Próg naświetlenia – (auto_threshold) FLOAT *tylko dla trybu auto
+    # Czas obrotu (servo_time) INT [1-48] * tylko dla trybu manual
+    # Kąt serva (servo_angle) INT [0-180] *tylko dla trybu set
+
+    # Czas Log’ów (log_timer) INT [1 – 180] (sekundy)
+    cursor.execute('''
+        create table if not exists configuration(
+            water_mode TEXT,
+            moisture_pct float,
+            water_time integer,
+            water_mililiters float,
+            servo_mode TEXT,
+            auto_threshold float,
+            servo_time integer,
+            servo_angle integer,
+            log_timer integer
+            
+        )
+    ''')
 
     conn.commit()
     conn.close()
+
+    #Sprawdzamy czy w bazie danych są minimalne informacje potrzebne do poprawnego działania sprzętu
+    #oraz wpisujemy podstawową konfigurację jeżeli jest taka potrzeba
+    check_for_init_data()
 
 # ===============================
 # Gettery danych
@@ -385,7 +398,7 @@ def get_config():
     return config
 
 # ===============================
-# Struktura bazy danych
+# Struktura bazy danych z przykładowymi danymi
 # ===============================
 
 #             0    "auto",        # water_mode

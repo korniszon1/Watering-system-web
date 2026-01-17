@@ -99,8 +99,8 @@
             {% for row in logs %}            
                     <div class="log">
                         {%if row[0] == "foto1" or row[0] == "foto2" %} Fotorezystor: {{row[0]}} dokonał pomiaru: {{row[1]}}, o godzinie {{row[2]}} {%endif%}  
-                        {%if row[0] == "moisture" %} Czujnik wilgotności gleby: {{row[0]}} dokonał pomiaru: {{row[1]}}, o godzinie {{row[2]}} {%endif%}
-                        {%if row[0] == "water" %} Czujnik odległości: {{row[0]}} dokonał pomiaru zbiornika wody: {{row[1]}}%, o godzinie {{row[2]}} {%endif%}  
+                        {%if row[0] == "moisture" %} Czujnik wilgotności gleby: {{row[0]}} dokonał pomiaru: {{row[1]}}% wilgotności gleby, o godzinie {{row[2]}} {%endif%}
+                        {%if row[0] == "water" %} Czujnik odległości: {{row[0]}} dokonał pomiaru zbiornika wody: {{row[1]}}% zapełnienia zbiornika, o godzinie {{row[2]}} {%endif%}  
                     </div>
             {% endfor %} 
 
