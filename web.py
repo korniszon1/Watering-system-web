@@ -583,7 +583,8 @@ def plot_zone():
     ax.set_yticklabels([])
 
     rotation = math.radians(get_last_servo_log()[2])
-    ax.set_theta_offset(np.pi/2 + rotation)
+    print(f"ROTACJA - > {rotation}")
+    ax.set_theta_offset(-rotation)
 
     ax.set_xticks([])
 
